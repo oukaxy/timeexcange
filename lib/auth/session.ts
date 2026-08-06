@@ -1,15 +1,18 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/types/database";
 
-export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
-}
+export const getCurrentUser = cache(
+  async (): Promise<User | null> => {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
+  },
+);
 
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
@@ -17,19 +20,19 @@ export async function requireUser(): Promise<User> {
   return user;
 }
 
-export async function getProfile(
-  userId: string,
-): Promise<ProfileRow | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
+export const getProfile = cache(
+  async (userId: string): Promise<ProfileRow | null> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
 
-  if (error || !data) return null;
-  return data;
-}
+    if (error || !data) return null;
+    return data;
+  },
+);
 
 export async function requireProfile(): Promise<{
   user: User;

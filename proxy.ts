@@ -28,10 +28,10 @@ export async function proxy(request: NextRequest) {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const isAuthed = !!user;
+  const isAuthed = !!session;
   const isProtectedPath = request.nextUrl.pathname.startsWith("/app");
   const isAuthPath = request.nextUrl.pathname.startsWith("/login");
 
