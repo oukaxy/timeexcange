@@ -6,7 +6,7 @@ import { LayoutDashboard, Target, BarChart3, Settings, LogOut } from "lucide-rea
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
-import type { ProfileRow } from "@/types/database";
+import type { User } from "@supabase/supabase-js";
 
 const NAV_ITEMS = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { href: "/app/settings", label: "Atur", icon: Settings, exact: false },
 ] as const;
 
-export function AppNav({ profile }: { profile: ProfileRow }) {
+export function AppNav({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -60,10 +60,10 @@ export function AppNav({ profile }: { profile: ProfileRow }) {
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-card-foreground">
-                {profile.display_name || profile.email}
+                {user.user_metadata?.name || user.email}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {profile.daily_hours} jam/hari
+                {user.email}
               </p>
             </div>
             <ThemeToggle />

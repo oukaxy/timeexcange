@@ -22,7 +22,11 @@ export class OpenAICompatibleProvider implements AIProvider {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.config.apiKey}`,
       },
-      body: JSON.stringify({ ...request, stream: false }),
+      body: JSON.stringify({
+        ...request,
+        model: request.model || this.config.model,
+        stream: false,
+      }),
       signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
     });
 
@@ -47,7 +51,11 @@ export class OpenAICompatibleProvider implements AIProvider {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.config.apiKey}`,
       },
-      body: JSON.stringify({ ...request, stream: true }),
+      body: JSON.stringify({
+        ...request,
+        model: request.model || this.config.model,
+        stream: true,
+      }),
       signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
     });
 

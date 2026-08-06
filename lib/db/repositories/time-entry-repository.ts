@@ -39,24 +39,39 @@ export class TimeEntryRepository {
     return (data ?? []) as unknown as EntryWithCategory[];
   }
 
-  /** Total invested minutes per category for a given date. */
-  async minutesByCategory(
-    userId: string,
-    entryDate: string,
-  ): Promise<Record<string, number>> {
-    const { data, error } = await this.db
-      .from("time_entries")
-      .select("category_id, minutes")
-      .eq("user_id", userId)
-      .eq("entry_date", entryDate);
-
-    if (error) throw new Error(error.message);
-
+  /** Aggregate invested minutes per category for a given date. */
+  static totalsByCategory(
+    entries: Pick<TimeEntryRow, "category_id" | "minutes">[],
+  ): Record<string, number> {
     const totals: Record<string, number> = {};
-    for (const row of data ?? []) {
+    for (const row of entries) {
       totals[row.category_id] = (totals[row.category_id] ?? 0) + row.minutes;
     }
     return totals;
+  }
+
+  /**
+   * Recent entries with their category name, for AI context.
+   * Returns { categoryName, minutes } rows since `sinceDate` (YYYY-MM-DD).
+   */
+  async recentWithCategory(
+    userId: string,
+    sinceDate: string,
+  ): Promise<Array<{ category_name: string; minutes: number }>> {
+    const { data, error } = await this.db
+      .from("time_entries")
+      .select("minutes, categories(name)")
+      .eq("user_id", userId)
+      .gte("entry_date", sinceDate);
+
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).map((row) => ({
+      category_name:
+        (row.categories as unknown as { name: string } | null)?.name ??
+        "tanpa kategori",
+      minutes: row.minutes,
+    }));
   }
 
   async create(userId: string, input: TimeEntryInput): Promise<void> {

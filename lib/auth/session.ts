@@ -4,13 +4,18 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/types/database";
 
+/**
+ * Resolve the current user from the session cookie (JWT decode, no network).
+ * The signed token is trusted for identity; live revocation checks are only
+ * performed inside mutating Server Actions where needed.
+ */
 export const getCurrentUser = cache(
   async (): Promise<User | null> => {
     const supabase = await createClient();
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user;
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.user ?? null;
   },
 );
 
